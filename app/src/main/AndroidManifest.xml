@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Dispositivos" />
-        <activity android:name=".conectarDispositivo"></activity>
+        <activity android:name=".ConectarDispositivo"></activity>
     </application>
 
 </manifest>

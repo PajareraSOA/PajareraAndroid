@@ -21,6 +21,10 @@ public class Dispositivos extends AppCompatActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
             Toast.makeText(getApplicationContext(), (String) parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+            Intent it = new Intent(Dispositivos.this, ConectarDispositivo.class);
+            it.putExtra("aConectar", (String) ((String) parent.getItemAtPosition(position)).split("\n")[1]);
+            startActivity(it);
+
         }
     };
     private AdapterView.OnItemClickListener clickListenerVinculado = new AdapterView.OnItemClickListener() {
@@ -44,7 +48,7 @@ public class Dispositivos extends AppCompatActivity {
         ArrayList<BluetoothDevice> devicesVinculados = getIntent().getExtras().getParcelableArrayList("Vinculados");
         ArrayList<String> nameDevices = new ArrayList<String>();
         ArrayList<String> nameVinculados = new ArrayList<>();
-
+        devices.removeAll(devicesVinculados);
         for (BluetoothDevice device : devices) {
             nameDevices.add(device.getName() + "\n" + device.getAddress());
         }
@@ -63,7 +67,7 @@ public class Dispositivos extends AppCompatActivity {
         listView.setOnItemClickListener(clickListener);
 
         listEmparejados.setAdapter(devicesAdapterVinculados);
-        listEmparejados.setOnItemClickListener(clickListenerVinculado);
+        listEmparejados.setOnItemClickListener(clickListener);
 
 
     }
