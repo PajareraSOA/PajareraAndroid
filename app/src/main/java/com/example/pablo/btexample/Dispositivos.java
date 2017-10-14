@@ -1,7 +1,13 @@
 package com.example.pablo.btexample;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +22,9 @@ import java.util.List;
 public class Dispositivos extends AppCompatActivity {
     private ListView listView;
     private ListView listEmparejados;
+
+    private SensorManager sensorManager;
+
     private AdapterView.OnItemClickListener clickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -52,7 +61,7 @@ public class Dispositivos extends AppCompatActivity {
         for (BluetoothDevice device : devices) {
             nameDevices.add(device.getName() + "\n" + device.getAddress());
         }
-        ArrayAdapter<String> devicesAdapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,nameDevices);
+        ArrayAdapter<String> devicesAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, nameDevices);
 
 
         if (!devicesVinculados.isEmpty()) {
@@ -61,14 +70,13 @@ public class Dispositivos extends AppCompatActivity {
             }
         }
 
-        ArrayAdapter<String> devicesAdapterVinculados = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,nameVinculados);
+        ArrayAdapter<String> devicesAdapterVinculados = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, nameVinculados);
 
         listView.setAdapter(devicesAdapter);
         listView.setOnItemClickListener(clickListener);
 
         listEmparejados.setAdapter(devicesAdapterVinculados);
         listEmparejados.setOnItemClickListener(clickListener);
-
-
     }
+
 }

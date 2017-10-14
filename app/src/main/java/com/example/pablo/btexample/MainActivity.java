@@ -8,6 +8,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,13 +26,18 @@ import android.widget.ToggleButton;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "Bluetooth";
     private ToggleButton bluetoothBtn;
     private BluetoothAdapter bluetoothAdapter;
     private Button searchBtn;
     private ArrayList<BluetoothDevice> list = new ArrayList<BluetoothDevice>();
+
+    private SensorManager sensorManager;
+    long ultimaActualizacion = 0, ultimoMovimiento = 0;
+    float x = 0, y = 0, z = 0, xAnterior = 0, yAnterior = 0, zAnterior = 0;
+
 
     private ProgressDialog prd;
     private View.OnClickListener bluetoothListener = new View.OnClickListener() {
@@ -98,6 +108,19 @@ public class MainActivity extends AppCompatActivity {
             filter.addAction(BluetoothDevice.ACTION_FOUND);
             registerReceiver(mReceiver, filter);
         }
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        sensorManager.registerListener((SensorEventListener) this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -107,5 +130,62 @@ public class MainActivity extends AppCompatActivity {
             bluetoothAdapter.disable();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        synchronized (this) {
+            float[] valores =  event.values;
+
+            switch(event.sensor.getType()) {
+                case Sensor.TYPE_ACCELEROMETER:
+                    long tiempoActual = event.timestamp;
+
+                    x = valores[0];
+                    y = valores[1];
+                    z = valores[2];
+
+                    if(xAnterior == 0 && yAnterior == 0 && zAnterior == 0) {
+                        ultimaActualizacion = tiempoActual;
+                        ultimoMovimiento = tiempoActual;
+                        xAnterior = x;
+                        yAnterior = y;
+                        zAnterior = z;
+                    }
+
+                    long diferencia = tiempoActual - ultimaActualizacion;
+                    if(diferencia > 0) {
+                        float movimiento = Math.abs((x + y + z) - (xAnterior - yAnterior - zAnterior)) / diferencia;
+                        int limite = 1500;
+                        float movimiento_min = 1E-8f;
+                        if(movimiento > movimiento_min) {
+                            if(tiempoActual - ultimoMovimiento >= limite) {
+                                Log.i("mov", String.valueOf(Math.abs(x - xAnterior)) + "\t" + String.valueOf(Math.abs(y - yAnterior)) + "\t" + String.valueOf(Math.abs(z - zAnterior)));
+/*                                Log.i("y-mov", String.valueOf(Math.abs(y - yAnterior)));
+                                Log.i("z-mov", String.valueOf(Math.abs(z-zAnterior)));*/
+                                if(Math.abs(y - yAnterior) < 1 && Math.abs(x - xAnterior) > 10 && Math.abs(z - zAnterior) < 1) {
+                                    /*Log.i("mov", "El movimiento tan preciado");*/
+                                    Toast.makeText(getApplicationContext(), "El movimiento tan preciado", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+
+                        ultimoMovimiento = tiempoActual;
+                    }
+
+                    xAnterior = x;
+                    yAnterior = y;
+                    zAnterior = z;
+                    ultimaActualizacion = tiempoActual;
+
+                    new ListenerAcelerometro().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 }
