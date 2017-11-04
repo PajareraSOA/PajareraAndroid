@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BTExample.iml" filepath="$PROJECT_DIR$/BTExample.iml" />
+      <module fileurl="file://C:\Users\leodr\git\PajareraAndroid\BTExample.iml" filepath="C:\Users\leodr\git\PajareraAndroid\BTExample.iml" />
       <module fileurl="file://$PROJECT_DIR$/PajareraAndroid.iml" filepath="$PROJECT_DIR$/PajareraAndroid.iml" />
+      <module fileurl="file://C:\Users\leodr\git\PajareraAndroid\PajareraAndroid.iml" filepath="C:\Users\leodr\git\PajareraAndroid\PajareraAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\leodr\git\PajareraAndroid\app\app.iml" filepath="C:\Users\leodr\git\PajareraAndroid\app\app.iml" />
     </modules>
   </component>
 </project>

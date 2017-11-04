@@ -35,9 +35,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<BluetoothDevice> list = new ArrayList<BluetoothDevice>();
 
     private SensorManager sensorManager;
+
+    // Acelerometro
     long ultimaActualizacion = 0, ultimoMovimiento = 0;
     float x = 0, y = 0, z = 0, xAnterior = 0, yAnterior = 0, zAnterior = 0;
 
+    //Giroscopo
+    boolean paUnLado = false, palOtro = false;
 
     private ProgressDialog prd;
     private View.OnClickListener bluetoothListener = new View.OnClickListener() {
@@ -115,6 +119,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onResume() {
         super.onResume();
         sensorManager.registerListener((SensorEventListener) this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener((SensorEventListener) this, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener((SensorEventListener) this, sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -135,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         synchronized (this) {
+            Intent i = new Intent(MainActivity.this, ConectarDispositivo.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
             float[] valores =  event.values;
 
             switch(event.sensor.getType()) {
@@ -166,6 +175,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                 if(Math.abs(y - yAnterior) < 1 && Math.abs(x - xAnterior) > 10 && Math.abs(z - zAnterior) < 1) {
                                     /*Log.i("mov", "El movimiento tan preciado");*/
                                     Toast.makeText(getApplicationContext(), "El movimiento tan preciado", Toast.LENGTH_SHORT).show();
+                                    // i.putExtra("sensor", "acelerometro");
+                                    // startActivity(i);
+                                    //new ListenerAcelerometro().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 }
                             }
                         }
@@ -178,7 +190,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     zAnterior = z;
                     ultimaActualizacion = tiempoActual;
 
-                    new ListenerAcelerometro().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
+
+                case Sensor.TYPE_GYROSCOPE:
+                    if(event.values[0] > 5f) { // anticlockwise
+                        Log.i("GIROSCOPO", "PA UN LADO");
+                        paUnLado = !paUnLado;
+                    } else if(event.values[0] < - 5f) { // clockwise
+                        Log.i("GIROSCOPO", "PAL OTRO");
+                        palOtro = !palOtro;
+                    }
+
+                    if(paUnLado && palOtro) {
+                        Log.i("GIROSCOPO", "PIOLA");
+                        paUnLado = false;
+                        palOtro = false;
+                    }
+                    break;
+
+                case Sensor.TYPE_PROXIMITY:
+                    if(event.values[0] < ((Sensor) sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)).getMaximumRange()) {
+                        Log.i("PROXIMIDAD", "CERCA");
+                    } else {
+                        Log.i("PROXIMIDAD", "LEJOS");
+                    }
                     break;
             }
         }
